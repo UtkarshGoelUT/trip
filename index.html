@@ -195,8 +195,11 @@
             <div class="bg-white rounded-2xl shadow-sm border border-sand-200 p-6 md:p-10">
                 
                 <div id="dayHeader" class="mb-8 border-b border-sand-100 pb-6">
-                    <div class="flex items-center gap-3 mb-2">
-                        <span id="displayDate" class="bg-ocean-100 text-ocean-800 text-sm font-bold px-3 py-1 rounded-full uppercase tracking-wide"></span>
+                    <div class="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+                        <span id="displayDate" class="bg-ocean-100 text-ocean-800 text-sm font-bold px-3 py-1 rounded-full uppercase tracking-wide inline-block w-max"></span>
+                        <div id="displayDressCode" class="flex items-center gap-2 text-sm text-gray-600 bg-sand-100 px-3 py-1 rounded-full w-max border border-sand-200">
+                            <!-- Dress code injected here -->
+                        </div>
                     </div>
                     <h3 id="displayTitle" class="text-2xl md:text-4xl font-serif text-gray-900 mb-4"></h3>
                     <div class="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg">
@@ -229,6 +232,7 @@
                 date: "19 March",
                 title: "Arrival + Cliff + Sunset Vibes",
                 note: "👉 Easy first day. No vehicles needed.",
+                dressCode: "👕 Casual travel wear & light evening resort wear.",
                 vibe: [90, 20, 50, 60],
                 timeline: [
                     {
@@ -274,6 +278,7 @@
                 date: "20 March",
                 title: "Surf + North Beaches Explorer Day",
                 note: "👉 This day covers almost all scenic coastal spots in one smooth ride (15–20 km total riding).",
+                dressCode: "🩳 Swimwear (morning) changing to breezy beachwear/shorts for scooty ride.",
                 vibe: [40, 90, 70, 50],
                 timeline: [
                     {
@@ -319,6 +324,7 @@
                 date: "21 March",
                 title: "Surf + Temple + Mangrove Kayaking",
                 note: "👉 This is your most peaceful and romantic day.",
+                dressCode: "🥻 Modest clothing for temple (shoulders/knees covered), activewear for kayaking.",
                 vibe: [80, 40, 30, 95],
                 timeline: [
                     {
@@ -364,6 +370,7 @@
                 date: "22 March",
                 title: "Surf + Jatayu + Elephant Park",
                 note: "👉 Only long-drive day. Everything else is relaxed.",
+                dressCode: "👟 Comfortable walking shoes, breathable cottons for inland heat.",
                 vibe: [30, 85, 90, 40],
                 timeline: [
                     {
@@ -525,6 +532,7 @@
             const day = itineraryData.find(d => d.id === currentDayId);
             
             document.getElementById('displayDate').innerText = `🗓️ ${day.date} (Day ${day.dayNum})`;
+            document.getElementById('displayDressCode').innerHTML = `<strong>Attire:</strong> ${day.dressCode}`;
             document.getElementById('displayTitle').innerText = day.title;
             document.getElementById('displayNote').innerText = day.note;
 
