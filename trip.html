@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Varkala Escape: 4-Day Itinerary</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                        serif: ['Playfair Display', 'serif'],
+                    },
+                    colors: {
+                        sand: {
+                            50: '#fdfbf7',
+                            100: '#f7f3ea',
+                            200: '#eee5d0',
+                        },
+                        ocean: {
+                            500: '#0ea5e9',
+                            700: '#0369a1',
+                            900: '#0c4a6e',
+                        },
+                        sunset: {
+                            400: '#fb923c',
+                            500: '#f97316',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        <!-- Chosen Palette: Warm Sand & Tropical Ocean (Beige, Soft Blue, Deep Teal, Sunset Orange) -->
+        <!-- Application Structure Plan: The SPA uses a dashboard-style layout to present the itinerary. It begins with a high-level overview and an interactive "Daily Vibe" radar chart to set expectations. The core is an interactive tabbed timeline, allowing users to focus on one day at a time, preventing information overload. "Photo frames" (CSS-styled elements) are integrated into the timeline to satisfy the visual requirement without external image dependencies. This structure transitions the linear text into an explorable, dynamic tool. -->
+        <!-- Visualization & Content Choices: 
+          1. Radar Chart (Chart.js): Maps the changing 'vibe' (Relax, Explore, Travel, Romance) of each day. It provides a quick, visual summary of what to expect, updating dynamically as the user selects different days.
+          2. Tabbed Timeline (HTML/JS): Organizes the dense chronological data into digestible, day-by-day views.
+          3. CSS 'Polaroid' Frames: Fulfills the 'add photos' request using pure CSS gradients and Unicode, adhering strictly to the NO SVG/raster image constraint while enhancing visual appeal. 
+        -->
+        <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+        
+        body {
+            background-color: #fdfbf7;
+            color: #1f2937;
+        }
+        
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+
+        .photo-frame {
+            background: white;
+            padding: 12px 12px 32px 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            transform: rotate(-2deg);
+            transition: transform 0.3s ease;
+            max-width: 280px;
+            margin: 1rem auto;
+        }
+
+        .photo-frame:hover {
+            transform: rotate(0deg) scale(1.05);
+            z-index: 10;
+        }
+
+        .photo-frame.alt-rotate {
+            transform: rotate(3deg);
+        }
+
+        .photo-inner {
+            width: 100%;
+            height: 180px;
+            background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 50%, #7dd3fc 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .bg-gradient-sunset {
+            background: linear-gradient(135deg, #fce7f3 0%, #ffedd5 50%, #e0f2fe 100%);
+        }
+
+        .bg-gradient-forest {
+            background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+        }
+
+        .bg-gradient-temple {
+            background: linear-gradient(135deg, #ffedd5 0%, #fed7aa 100%);
+        }
+
+        .timeline-dot {
+            position: absolute;
+            left: -33px;
+            top: 0.25rem;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #0ea5e9;
+            border: 4px solid #fdfbf7;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fdfbf7;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen">
+
+    <header class="bg-gradient-sunset py-16 px-6 border-b border-sand-200">
+        <div class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+            <div class="max-w-2xl">
+                <span class="text-ocean-700 font-semibold tracking-wider uppercase text-sm mb-2 block">Curated Travel Itinerary</span>
+                <h1 class="text-5xl md:text-6xl font-serif text-ocean-900 mb-4 leading-tight">Varkala Coastal Retreat</h1>
+                <p class="text-lg text-gray-700 mb-6">A carefully balanced 4-day journey blending surf, scenic exploration, spiritual moments, and pure relaxation. From the vibrant North Cliff to the tranquil mangrove forests.</p>
+                <div class="inline-flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm text-sm font-medium text-ocean-900">
+                    <span class="text-xl">📍</span>
+                    Basecamp: Premium cottages @ Dolphin bay
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-white/40 text-center">
+                    <span class="block text-3xl mb-1">🌊</span>
+                    <span class="font-bold text-gray-900 block">3</span>
+                    <span class="text-xs text-gray-600 uppercase">Surf Sessions</span>
+                </div>
+                <div class="bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-white/40 text-center">
+                    <span class="block text-3xl mb-1">🛵</span>
+                    <span class="font-bold text-gray-900 block">5+</span>
+                    <span class="text-xs text-gray-600 uppercase">Beaches Explored</span>
+                </div>
+                <div class="bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-white/40 text-center">
+                    <span class="block text-3xl mb-1">🚣</span>
+                    <span class="font-bold text-gray-900 block">1</span>
+                    <span class="text-xs text-gray-600 uppercase">Mangrove Kayak</span>
+                </div>
+                <div class="bg-white/60 backdrop-blur-sm p-4 rounded-xl border border-white/40 text-center">
+                    <span class="block text-3xl mb-1">🦅</span>
+                    <span class="font-bold text-gray-900 block">1</span>
+                    <span class="text-xs text-gray-600 uppercase">Epic Viewpoint</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-12">
+        
+        <section class="mb-16">
+            <h2 class="text-3xl font-serif text-ocean-900 mb-4">Trip Dynamics & Overview</h2>
+            <p class="text-gray-700 max-w-3xl mb-8">This section visualizes the shifting tempo of your trip. The radar chart below breaks down the primary focus of each day, helping you understand when to conserve energy and when to prepare for adventure. Use the buttons below to filter the chart.</p>
+            
+            <div class="bg-white rounded-2xl shadow-sm border border-sand-200 p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center">
+                <div class="w-full md:w-1/2 flex flex-col justify-center gap-4">
+                    <div id="chartControls" class="flex flex-col gap-3">
+                    </div>
+                </div>
+                <div class="w-full md:w-1/2">
+                    <div class="chart-container">
+                        <canvas id="vibeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="itinerary-section">
+            <h2 class="text-3xl font-serif text-ocean-900 mb-4">Interactive Daily Itinerary</h2>
+            <p class="text-gray-700 max-w-3xl mb-8">Navigate through your day-by-day schedule below. Each day is structured chronologically, highlighting key activities, travel times, and essential notes to ensure a seamless experience. Included are styled 'photo captures' representing the visual highlights of your stops.</p>
+
+            <div class="flex flex-wrap gap-2 mb-8 border-b border-sand-200 pb-4" id="dayTabs">
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-sand-200 p-6 md:p-10">
+                
+                <div id="dayHeader" class="mb-8 border-b border-sand-100 pb-6">
+                    <div class="flex items-center gap-3 mb-2">
+                        <span id="displayDate" class="bg-ocean-100 text-ocean-800 text-sm font-bold px-3 py-1 rounded-full uppercase tracking-wide"></span>
+                    </div>
+                    <h3 id="displayTitle" class="text-2xl md:text-4xl font-serif text-gray-900 mb-4"></h3>
+                    <div class="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg">
+                        <p id="displayNote" class="text-orange-800 font-medium"></p>
+                    </div>
+                </div>
+
+                <div class="relative pl-8 md:pl-0">
+                    <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-sand-200 -translate-x-1/2"></div>
+                    <div class="md:hidden absolute left-0 top-0 bottom-0 w-px bg-sand-200"></div>
+                    <div id="timelineContainer" class="flex flex-col gap-12 relative">
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-ocean-900 text-white py-12 px-6 mt-16 text-center">
+        <p class="font-serif text-xl mb-4">Varkala Awaits.</p>
+        <p class="text-ocean-200 text-sm">Have a safe flight to Thiruvananthapuram and enjoy your stay at Dolphin bay.</p>
+    </footer>
+
+    <script>
+        const itineraryData = [
+            {
+                id: 1,
+                dayNum: 1,
+                date: "19 March",
+                title: "Arrival + Cliff + Sunset Vibes",
+                note: "👉 Easy first day. No vehicles needed.",
+                vibe: [90, 20, 50, 60],
+                timeline: [
+                    {
+                        time: "11:25 AM",
+                        type: "travel",
+                        title: "Arrival at TRV",
+                        desc: "✈️ Arrive at Thiruvananthapuram International Airport. Take a 🚖 Taxi to Varkala (approx. 1 hr 15 min travel time).",
+                        photo: null
+                    },
+                    {
+                        time: "1:30–2:00 PM",
+                        type: "stay",
+                        title: "Check-in & Settle",
+                        desc: "Arrive and check-in at Premium cottages @ Dolphin bay.",
+                        photo: { icon: "🛖", style: "bg-gradient-forest", caption: "Premium cottages @ Dolphin bay" }
+                    },
+                    {
+                        time: "Afternoon",
+                        type: "food",
+                        title: "Lunch & Rest",
+                        desc: "Grab lunch near North Cliff, then head back to the cottage to rest after your travel.",
+                        photo: null
+                    },
+                    {
+                        time: "Evening",
+                        type: "explore",
+                        title: "Walkable Exploration",
+                        desc: "Explore North Cliff Road and enjoy some flea market browsing. Catch the beautiful sunset at Varkala Beach.",
+                        photo: { icon: "🌅", style: "bg-gradient-sunset", caption: "Sunset at Varkala Beach" }
+                    },
+                    {
+                        time: "Night",
+                        type: "food",
+                        title: "Dinner & Stroll",
+                        desc: "Dinner at Asparagus, followed by a relaxing post-dinner cliff walk.",
+                        photo: null
+                    }
+                ]
+            },
+            {
+                id: 2,
+                dayNum: 2,
+                date: "20 March",
+                title: "Surf + North Beaches Explorer Day",
+                note: "👉 This day covers almost all scenic coastal spots in one smooth ride (15–20 km total riding).",
+                vibe: [40, 90, 70, 50],
+                timeline: [
+                    {
+                        time: "7:00 AM",
+                        type: "action",
+                        title: "Surf Session 1",
+                        desc: "🌊 Morning surf session to kick off the day. Followed by breakfast at a cliff café.",
+                        photo: { icon: "🏄", style: "bg-gradient-sunset", caption: "Early morning waves" }
+                    },
+                    {
+                        time: "Mid-Morning",
+                        type: "travel",
+                        title: "Scooty Rental",
+                        desc: "Rent a Scooty from North Cliff to begin your beach circuit.",
+                        photo: null
+                    },
+                    {
+                        time: "Daytime",
+                        type: "explore",
+                        title: "Beach Circuit (North Route)",
+                        desc: "Follow the same direction with no backtracking: Edava Beach ➝ Varkala Tunnel ➝ Kappil Beach ➝ Varkala Black Sand Beach ➝ Varkala Aquarium.",
+                        photo: { icon: "🛵", style: "bg-gradient-forest alt-rotate", caption: "Cruising the coastal route" }
+                    },
+                    {
+                        time: "Late Afternoon",
+                        type: "stay",
+                        title: "Return & Rest",
+                        desc: "Return to the hotel for some necessary rest.",
+                        photo: null
+                    },
+                    {
+                        time: "Evening",
+                        type: "explore",
+                        title: "Thanni Beach Sunset",
+                        desc: "Drive out to catch the sunset at Thanni Beach. Return for dinner at North Cliff.",
+                        photo: null
+                    }
+                ]
+            },
+            {
+                id: 3,
+                dayNum: 3,
+                date: "21 March",
+                title: "Surf + Temple + Mangrove Kayaking",
+                note: "👉 This is your most peaceful and romantic day.",
+                vibe: [80, 40, 30, 95],
+                timeline: [
+                    {
+                        time: "7:00 AM",
+                        type: "action",
+                        title: "Surf Session 2",
+                        desc: "🌊 Second morning surf session, followed by a hearty breakfast.",
+                        photo: null
+                    },
+                    {
+                        time: "Late Morning",
+                        type: "explore",
+                        title: "Spiritual Visit",
+                        desc: "Visit the historic Janardanaswamy Temple (Spend about 30–40 mins here).",
+                        photo: { icon: "🛕", style: "bg-gradient-temple", caption: "Janardanaswamy Temple" }
+                    },
+                    {
+                        time: "Afternoon",
+                        type: "relax",
+                        title: "Deep Relaxation",
+                        desc: "Rest at the cottage or opt for a couple's Ayurvedic massage.",
+                        photo: null
+                    },
+                    {
+                        time: "4:00 PM (Sunset)",
+                        type: "action",
+                        title: "Mangrove Kayaking",
+                        desc: "Evening Highlight: 🚣 Mangrove Forest Kayaking on the Paravur side (20–25 min from Varkala). Best experienced around sunset.",
+                        photo: { icon: "🛶", style: "bg-gradient-forest", caption: "Golden hour in the mangroves" }
+                    },
+                    {
+                        time: "Night",
+                        type: "food",
+                        title: "Chill Evening",
+                        desc: "Return to North Cliff for café hopping, live music, and dessert.",
+                        photo: null
+                    }
+                ]
+            },
+            {
+                id: 4,
+                dayNum: 4,
+                date: "22 March",
+                title: "Surf + Jatayu + Elephant Park",
+                note: "👉 Only long-drive day. Everything else is relaxed.",
+                vibe: [30, 85, 90, 40],
+                timeline: [
+                    {
+                        time: "7:00 AM",
+                        type: "action",
+                        title: "Final Surf Session",
+                        desc: "🌊 Surf session 3 to catch your last Varkala waves.",
+                        photo: null
+                    },
+                    {
+                        time: "10:00 AM",
+                        type: "travel",
+                        title: "Half-Day Excursion",
+                        desc: "Hire a Cab for a half-day trip inland.",
+                        photo: null
+                    },
+                    {
+                        time: "Mid-Day",
+                        type: "explore",
+                        title: "Jatayu Earth's Center",
+                        desc: "1️⃣ Take the cable car ride to the giant sculpture viewpoint. Spend 2–3 hours exploring.",
+                        photo: { icon: "🦅", style: "bg-gradient-temple alt-rotate", caption: "Jatayu giant sculpture" }
+                    },
+                    {
+                        time: "Afternoon",
+                        type: "explore",
+                        title: "Kaveri Elephant Park",
+                        desc: "2️⃣ Visit the park for an elephant interaction experience.",
+                        photo: { icon: "🐘", style: "bg-gradient-forest", caption: "Gentle giants at Kaveri" }
+                    },
+                    {
+                        time: "Evening",
+                        type: "relax",
+                        title: "Return & Final Sunset",
+                        desc: "Return to Varkala by evening. Watch your final sunset at Varkala Beach.",
+                        photo: null
+                    },
+                    {
+                        time: "Night",
+                        type: "food",
+                        title: "Farewell Dinner",
+                        desc: "Enjoy a special dinner at North Cliff and take one last cliff walk.",
+                        photo: null
+                    }
+                ]
+            }
+        ];
+
+        let vibeChartInstance = null;
+        let currentDayId = 1;
+
+        function initChart() {
+            const ctx = document.getElementById('vibeChart').getContext('2d');
+            
+            const data = {
+                labels: ['Relaxation', 'Exploration', 'Travel / Drive', 'Romance / Chill'],
+                datasets: [{
+                    label: 'Vibe Intensity',
+                    data: itineraryData[0].vibe,
+                    backgroundColor: 'rgba(14, 165, 233, 0.2)',
+                    borderColor: 'rgba(14, 165, 233, 1)',
+                    pointBackgroundColor: 'rgba(14, 165, 233, 1)',
+                    pointBorderColor: '#fff',
+                    pointHoverBackgroundColor: '#fff',
+                    pointHoverBorderColor: 'rgba(14, 165, 233, 1)',
+                    borderWidth: 2,
+                }]
+            };
+
+            const config = {
+                type: 'radar',
+                data: data,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                            grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                            pointLabels: {
+                                font: { family: 'Outfit', size: 12, weight: '600' },
+                                color: '#1f2937'
+                            },
+                            ticks: { display: false, min: 0, max: 100 }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(12, 74, 110, 0.9)',
+                            titleFont: { family: 'Outfit', size: 14 },
+                            bodyFont: { family: 'Outfit', size: 13 },
+                            padding: 10,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) label += ': ';
+                                    if (context.parsed.y !== null) label += context.parsed.r + '%';
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            };
+
+            vibeChartInstance = new Chart(ctx, config);
+        }
+
+        function updateChart(dayIndex) {
+            if (vibeChartInstance) {
+                vibeChartInstance.data.datasets[0].data = itineraryData[dayIndex].vibe;
+                vibeChartInstance.update();
+            }
+        }
+
+        function renderChartControls() {
+            const container = document.getElementById('chartControls');
+            container.innerHTML = '';
+            
+            itineraryData.forEach((day, index) => {
+                const btn = document.createElement('button');
+                btn.className = `text-left px-4 py-3 rounded-xl border transition-all duration-200 ${index === 0 ? 'bg-ocean-50 border-ocean-200 shadow-sm' : 'bg-white border-transparent hover:bg-sand-100'}`;
+                btn.innerHTML = `
+                    <div class="font-bold text-ocean-900">Day ${day.dayNum}</div>
+                    <div class="text-sm text-gray-600 truncate">${day.title}</div>
+                `;
+                btn.onclick = () => {
+                    Array.from(container.children).forEach(c => {
+                        c.className = 'text-left px-4 py-3 rounded-xl border transition-all duration-200 bg-white border-transparent hover:bg-sand-100';
+                    });
+                    btn.className = 'text-left px-4 py-3 rounded-xl border transition-all duration-200 bg-ocean-50 border-ocean-200 shadow-sm';
+                    updateChart(index);
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function renderTabs() {
+            const container = document.getElementById('dayTabs');
+            container.innerHTML = '';
+
+            itineraryData.forEach((day) => {
+                const btn = document.createElement('button');
+                const isActive = day.id === currentDayId;
+                btn.className = `px-6 py-3 rounded-full font-medium transition-all duration-200 text-sm md:text-base ${isActive ? 'bg-ocean-600 text-white shadow-md' : 'bg-white text-gray-600 hover:bg-sand-200 border border-sand-200'}`;
+                btn.innerText = `Day ${day.dayNum} - ${day.date}`;
+                btn.onclick = () => {
+                    currentDayId = day.id;
+                    renderTabs();
+                    renderDayContent();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function renderDayContent() {
+            const day = itineraryData.find(d => d.id === currentDayId);
+            
+            document.getElementById('displayDate').innerText = `🗓️ ${day.date} (Day ${day.dayNum})`;
+            document.getElementById('displayTitle').innerText = day.title;
+            document.getElementById('displayNote').innerText = day.note;
+
+            const tlContainer = document.getElementById('timelineContainer');
+            tlContainer.innerHTML = '';
+
+            day.timeline.forEach((event, index) => {
+                const row = document.createElement('div');
+                row.className = "relative flex flex-col md:flex-row md:justify-between items-start md:items-center group w-full";
+                
+                const isEven = index % 2 === 0;
+
+                const timeBlock = `
+                    <div class="md:w-5/12 ${isEven ? 'md:text-right md:pr-12' : 'md:text-left md:pl-12 order-last'} mb-4 md:mb-0 relative w-full pl-8 md:pl-0">
+                        ${isEven ? '<div class="hidden md:block timeline-dot right-[-41px] left-auto"></div>' : ''}
+                        ${!isEven ? '<div class="hidden md:block timeline-dot left-[-41px]"></div>' : ''}
+                        <div class="md:hidden timeline-dot"></div>
+                        <span class="text-ocean-600 font-bold text-sm tracking-widest uppercase mb-1 block">${event.time}</span>
+                        <h4 class="text-xl font-serif text-gray-900 mb-2">${event.title}</h4>
+                        <p class="text-gray-600 leading-relaxed">${event.desc}</p>
+                    </div>
+                `;
+
+                let visualBlock = '<div class="md:w-5/12 hidden md:block"></div>';
+                if (event.photo) {
+                    visualBlock = `
+                        <div class="md:w-5/12 ${isEven ? 'md:pl-12' : 'md:pr-12'} w-full pl-8 md:pl-0">
+                            <div class="photo-frame ${event.photo.style}">
+                                <div class="photo-inner ${event.photo.style.split(' ')[0]}">
+                                    ${event.photo.icon}
+                                </div>
+                                <p class="text-center font-serif text-sm mt-3 text-gray-800">${event.photo.caption}</p>
+                            </div>
+                        </div>
+                    `;
+                } else if (window.innerWidth < 768) {
+                    visualBlock = '';
+                }
+
+                if (isEven) {
+                    row.innerHTML = timeBlock + `<div class="md:w-2/12 hidden md:flex justify-center"></div>` + visualBlock;
+                } else {
+                    row.innerHTML = visualBlock + `<div class="md:w-2/12 hidden md:flex justify-center"></div>` + timeBlock;
+                }
+
+                tlContainer.appendChild(row);
+            });
+        }
+
+        window.onload = () => {
+            initChart();
+            renderChartControls();
+            renderTabs();
+            renderDayContent();
+        };
+    </script>
+</body>
+</html>
