@@ -37,11 +37,11 @@
     </script>
     <style>
         <!-- Chosen Palette: Warm Sand & Tropical Ocean (Beige, Soft Blue, Deep Teal, Sunset Orange) -->
-        <!-- Application Structure Plan: The SPA uses a dashboard-style layout to present the itinerary. It begins with a high-level overview and an interactive "Daily Vibe" radar chart to set expectations. The core is an interactive tabbed timeline, allowing users to focus on one day at a time, preventing information overload. "Photo frames" (CSS-styled elements) are integrated into the timeline to satisfy the visual requirement without external image dependencies. This structure transitions the linear text into an explorable, dynamic tool. -->
+        <!-- Application Structure Plan: The SPA uses a dashboard-style layout to present the itinerary. It begins with a high-level overview and an interactive "Daily Vibe" radar chart to set expectations. The core is an interactive tabbed timeline, allowing users to focus on one day at a time, preventing information overload. A new dedicated "Budget & Spa" tab has been added to isolate financial planning from the day-to-day experience. -->
         <!-- Visualization & Content Choices: 
-          1. Radar Chart (Chart.js): Maps the changing 'vibe' (Relax, Explore, Travel, Romance) of each day. It provides a quick, visual summary of what to expect, updating dynamically as the user selects different days.
-          2. Tabbed Timeline (HTML/JS): Organizes the dense chronological data into digestible, day-by-day views.
-          3. CSS 'Polaroid' Frames: Fulfills the 'add photos' request using pure CSS gradients and Unicode, adhering strictly to the NO SVG/raster image constraint while enhancing visual appeal. 
+          1. Radar Chart (Chart.js): Maps the changing 'vibe' (Relax, Explore, Travel, Romance) of each day.
+          2. Tabbed Timeline (HTML/JS): Organizes the dense chronological data into digestible views.
+          3. Budget & Spa View: Uses responsive Tailwind tables and highlight cards to display financial data clearly. 
         -->
         <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
         
@@ -186,32 +186,181 @@
         </section>
 
         <section id="itinerary-section">
-            <h2 class="text-3xl font-serif text-ocean-900 mb-4">Interactive Daily Itinerary</h2>
-            <p class="text-gray-700 max-w-3xl mb-8">Navigate through your day-by-day schedule below. Each day is structured chronologically, highlighting key activities, travel times, and essential notes to ensure a seamless experience. Included are styled 'photo captures' representing the visual highlights of your stops.</p>
+            <h2 class="text-3xl font-serif text-ocean-900 mb-4">Interactive Daily Planner</h2>
+            <p class="text-gray-700 max-w-3xl mb-8">Navigate through your day-by-day schedule or view your complete trip budget and spa details using the tabs below.</p>
 
             <div class="flex flex-wrap gap-2 mb-8 border-b border-sand-200 pb-4" id="dayTabs">
+                <!-- Tabs injected by JS -->
             </div>
 
-            <div class="bg-white rounded-2xl shadow-sm border border-sand-200 p-6 md:p-10">
+            <div class="bg-white rounded-2xl shadow-sm border border-sand-200 p-6 md:p-10 min-h-[500px]">
                 
-                <div id="dayHeader" class="mb-8 border-b border-sand-100 pb-6">
-                    <div class="flex flex-col md:flex-row md:items-center gap-4 mb-4">
-                        <span id="displayDate" class="bg-ocean-100 text-ocean-800 text-sm font-bold px-3 py-1 rounded-full uppercase tracking-wide inline-block w-max"></span>
-                        <div id="displayDressCode" class="flex items-center gap-2 text-sm text-gray-600 bg-sand-100 px-3 py-1 rounded-full w-max border border-sand-200">
-                            <!-- Dress code injected here -->
+                <!-- Timeline Container (Days 1-4) -->
+                <div id="itineraryContent">
+                    <div id="dayHeader" class="mb-8 border-b border-sand-100 pb-6">
+                        <div class="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+                            <span id="displayDate" class="bg-ocean-100 text-ocean-800 text-sm font-bold px-3 py-1 rounded-full uppercase tracking-wide inline-block w-max"></span>
+                            <div id="displayDressCode" class="flex items-center gap-2 text-sm text-gray-600 bg-sand-100 px-3 py-1 rounded-full w-max border border-sand-200">
+                                <!-- Dress code injected here -->
+                            </div>
+                        </div>
+                        <h3 id="displayTitle" class="text-2xl md:text-4xl font-serif text-gray-900 mb-4"></h3>
+                        <div class="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg">
+                            <p id="displayNote" class="text-orange-800 font-medium"></p>
                         </div>
                     </div>
-                    <h3 id="displayTitle" class="text-2xl md:text-4xl font-serif text-gray-900 mb-4"></h3>
-                    <div class="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg">
-                        <p id="displayNote" class="text-orange-800 font-medium"></p>
+
+                    <div class="relative pl-8 md:pl-0">
+                        <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-sand-200 -translate-x-1/2"></div>
+                        <div class="md:hidden absolute left-0 top-0 bottom-0 w-px bg-sand-200"></div>
+                        <div id="timelineContainer" class="flex flex-col gap-12 relative">
+                            <!-- Events injected by JS -->
+                        </div>
                     </div>
                 </div>
 
-                <div class="relative pl-8 md:pl-0">
-                    <div class="hidden md:block absolute left-1/2 top-0 bottom-0 w-px bg-sand-200 -translate-x-1/2"></div>
-                    <div class="md:hidden absolute left-0 top-0 bottom-0 w-px bg-sand-200"></div>
-                    <div id="timelineContainer" class="flex flex-col gap-12 relative">
+                <!-- Budget & Spa Container (Tab 5) -->
+                <div id="budgetContent" class="hidden animate-fade-in">
+                    <h3 class="text-3xl font-serif text-ocean-900 mb-6 flex items-center gap-3">
+                        <span>💰</span> Trip Budget & Spa Options
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+                        <!-- Highlight Cards -->
+                        <div class="bg-ocean-50 border border-ocean-200 rounded-xl p-6 shadow-sm">
+                            <div class="text-ocean-600 text-sm font-bold uppercase tracking-wide mb-1">Total Pre-Booked</div>
+                            <div class="text-4xl font-serif text-ocean-900 mb-2">₹53,863.63</div>
+                            <p class="text-ocean-800 text-sm font-medium">Flights (₹34,507) + Stay (₹19,356.63)</p>
+                        </div>
+                        <div class="bg-orange-50 border border-orange-200 rounded-xl p-6 shadow-sm">
+                            <div class="text-orange-600 text-sm font-bold uppercase tracking-wide mb-1">Estimated Grand Total</div>
+                            <div class="text-4xl font-serif text-orange-900 mb-2">₹92,031.63</div>
+                            <p class="text-orange-800 text-sm font-medium">Including all activities, transport, food, and spa.</p>
+                        </div>
                     </div>
+
+                    <!-- Budget Table -->
+                    <h4 class="text-xl font-bold text-gray-900 mb-4 border-b border-sand-200 pb-2">Complete Budget Breakdown</h4>
+                    <div class="overflow-x-auto mb-12 rounded-lg border border-sand-200">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-sand-100 text-ocean-900">
+                                    <th class="p-4 font-semibold border-b border-sand-200">Category</th>
+                                    <th class="p-4 font-semibold border-b border-sand-200">Expense Description</th>
+                                    <th class="p-4 font-semibold text-right border-b border-sand-200">Estimated Cost (INR)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-sand-200 text-gray-700 bg-white">
+                                <tr>
+                                    <td class="p-4"><span class="bg-ocean-100 text-ocean-800 text-xs px-2 py-1 rounded font-bold">Pre-Booked</span></td>
+                                    <td class="p-4">Round Trip Flights</td>
+                                    <td class="p-4 text-right font-medium">₹34,507.00</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4"><span class="bg-ocean-100 text-ocean-800 text-xs px-2 py-1 rounded font-bold">Pre-Booked</span></td>
+                                    <td class="p-4">Stay @ Premium Cottages, Dolphin Bay</td>
+                                    <td class="p-4 text-right font-medium">₹19,356.63</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4"><span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded font-bold">Estimate</span></td>
+                                    <td class="p-4">Activities (Surf x3, Kayak, Jatayu, Elephant Park)</td>
+                                    <td class="p-4 text-right font-medium">₹12,968.00</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4"><span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded font-bold">Estimate</span></td>
+                                    <td class="p-4">Local Transport (Airport Taxi, Scooty, Half-Day Cab)</td>
+                                    <td class="p-4 text-right font-medium">₹6,200.00</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4"><span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded font-bold">Estimate</span></td>
+                                    <td class="p-4">Food & Dining (Including specialty cliff dinners)</td>
+                                    <td class="p-4 text-right font-medium">₹13,500.00</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4"><span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded font-bold">Estimate</span></td>
+                                    <td class="p-4">Couple's Ayurvedic Spa Session</td>
+                                    <td class="p-4 text-right font-medium">₹5,500.00</td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-sand-50 font-bold text-ocean-900 border-t-[3px] border-sand-200">
+                                    <td colspan="2" class="p-4 text-right uppercase tracking-wider text-sm">Estimated Grand Total:</td>
+                                    <td class="p-4 text-right text-lg text-orange-600">₹92,031.63</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Transportation Rates Table -->
+                    <h4 class="text-xl font-bold text-gray-900 mb-4 border-b border-sand-200 pb-2">Local Transportation Rate Guide</h4>
+                    <div class="overflow-x-auto mb-12 rounded-lg border border-sand-200">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-sand-100 text-ocean-900">
+                                    <th class="p-4 font-semibold border-b border-sand-200">Transport Type</th>
+                                    <th class="p-4 font-semibold border-b border-sand-200">Use Case</th>
+                                    <th class="p-4 font-semibold text-right border-b border-sand-200">Estimated Price (INR)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-sand-200 text-gray-700 bg-white">
+                                <tr>
+                                    <td class="p-4 font-medium text-ocean-900">✈️ Airport Taxi (One-Way)</td>
+                                    <td class="p-4">TRV Airport to Varkala Cliff (~50km ride)</td>
+                                    <td class="p-4 text-right font-medium">₹1,500 - ₹1,800</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4 font-medium text-ocean-900">🛵 Scooty / 2-Wheeler</td>
+                                    <td class="p-4">Daily rental for beach hopping (Excludes petrol)</td>
+                                    <td class="p-4 text-right font-medium">₹400 - ₹500 / day</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4 font-medium text-ocean-900">🚘 Half-Day Cab (AC)</td>
+                                    <td class="p-4">Jatayu & Elephant Park round trip (~4-5 hours)</td>
+                                    <td class="p-4 text-right font-medium">₹1,800 - ₹2,200</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4 font-medium text-ocean-900">🛺 Local Auto Rickshaw</td>
+                                    <td class="p-4">Short point-to-point trips around town/cliff</td>
+                                    <td class="p-4 text-right font-medium">₹100 - ₹200 / trip</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Spa Table -->
+                    <h4 class="text-xl font-bold text-gray-900 mb-4 border-b border-sand-200 pb-2">Top Rated Couple Spa Options</h4>
+                    <div class="overflow-x-auto rounded-lg border border-sand-200">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-sand-100 text-ocean-900">
+                                    <th class="p-4 font-semibold border-b border-sand-200">Wellness Center</th>
+                                    <th class="p-4 font-semibold border-b border-sand-200">Google Rating</th>
+                                    <th class="p-4 font-semibold text-right border-b border-sand-200">Est. Couple Price (INR)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-sand-200 text-gray-700 bg-white">
+                                <tr class="bg-ocean-50 relative">
+                                    <td class="p-4 font-bold text-ocean-900">
+                                        Praana Spa and Wellness by Sarwaa
+                                        <span class="ml-2 bg-ocean-600 text-white text-[10px] uppercase px-2 py-0.5 rounded-full relative -top-0.5">Recommended</span>
+                                    </td>
+                                    <td class="p-4 font-medium text-gray-900">⭐ 4.8 / 5.0</td>
+                                    <td class="p-4 text-right font-bold text-ocean-900">~ ₹5,500</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4">Jiva Spa (Taj Gateway)</td>
+                                    <td class="p-4">⭐ 4.9 / 5.0</td>
+                                    <td class="p-4 text-right">~ ₹8,500</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-4">Oceano Cliff Ayurvedic Centre</td>
+                                    <td class="p-4">⭐ 4.5 / 5.0</td>
+                                    <td class="p-4 text-right">~ ₹4,000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-3 italic">*Prices are estimates for a standard 60-90 minute couple's relaxation or Ayurvedic massage. Booking 1-2 days in advance is highly recommended.</p>
                 </div>
 
             </div>
@@ -420,7 +569,7 @@
         ];
 
         let vibeChartInstance = null;
-        let currentDayId = 1;
+        let currentDayId = 1; // 1-4 for days, 'budget' for budget tab
 
         function initChart() {
             const ctx = document.getElementById('vibeChart').getContext('2d');
@@ -514,6 +663,7 @@
             const container = document.getElementById('dayTabs');
             container.innerHTML = '';
 
+            // Day Tabs
             itineraryData.forEach((day) => {
                 const btn = document.createElement('button');
                 const isActive = day.id === currentDayId;
@@ -526,60 +676,83 @@
                 };
                 container.appendChild(btn);
             });
+
+            // Budget & Spa Tab
+            const budgetBtn = document.createElement('button');
+            const isBudgetActive = currentDayId === 'budget';
+            budgetBtn.className = `px-6 py-3 rounded-full font-medium transition-all duration-200 text-sm md:text-base ${isBudgetActive ? 'bg-orange-500 text-white shadow-md border border-orange-600' : 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200'}`;
+            budgetBtn.innerHTML = `💰 Budget & Spa Info`;
+            budgetBtn.onclick = () => {
+                currentDayId = 'budget';
+                renderTabs();
+                renderDayContent();
+            };
+            container.appendChild(budgetBtn);
         }
 
         function renderDayContent() {
-            const day = itineraryData.find(d => d.id === currentDayId);
-            
-            document.getElementById('displayDate').innerText = `🗓️ ${day.date} (Day ${day.dayNum})`;
-            document.getElementById('displayDressCode').innerHTML = `<strong>Attire:</strong> ${day.dressCode}`;
-            document.getElementById('displayTitle').innerText = day.title;
-            document.getElementById('displayNote').innerText = day.note;
+            const itineraryContent = document.getElementById('itineraryContent');
+            const budgetContent = document.getElementById('budgetContent');
 
-            const tlContainer = document.getElementById('timelineContainer');
-            tlContainer.innerHTML = '';
+            if (currentDayId === 'budget') {
+                itineraryContent.classList.add('hidden');
+                budgetContent.classList.remove('hidden');
+            } else {
+                itineraryContent.classList.remove('hidden');
+                budgetContent.classList.add('hidden');
 
-            day.timeline.forEach((event, index) => {
-                const row = document.createElement('div');
-                row.className = "relative flex flex-col md:flex-row md:justify-between items-start md:items-center group w-full";
+                const day = itineraryData.find(d => d.id === currentDayId);
                 
-                const isEven = index % 2 === 0;
+                document.getElementById('displayDate').innerText = `🗓️ ${day.date} (Day ${day.dayNum})`;
+                document.getElementById('displayDressCode').innerHTML = `<strong>Attire:</strong> ${day.dressCode}`;
+                document.getElementById('displayTitle').innerText = day.title;
+                document.getElementById('displayNote').innerText = day.note;
 
-                const timeBlock = `
-                    <div class="md:w-5/12 ${isEven ? 'md:text-right md:pr-12' : 'md:text-left md:pl-12 order-last'} mb-4 md:mb-0 relative w-full pl-8 md:pl-0">
-                        ${isEven ? '<div class="hidden md:block timeline-dot right-[-41px] left-auto"></div>' : ''}
-                        ${!isEven ? '<div class="hidden md:block timeline-dot left-[-41px]"></div>' : ''}
-                        <div class="md:hidden timeline-dot"></div>
-                        <span class="text-ocean-600 font-bold text-sm tracking-widest uppercase mb-1 block">${event.time}</span>
-                        <h4 class="text-xl font-serif text-gray-900 mb-2">${event.title}</h4>
-                        <p class="text-gray-600 leading-relaxed">${event.desc}</p>
-                    </div>
-                `;
+                const tlContainer = document.getElementById('timelineContainer');
+                tlContainer.innerHTML = '';
 
-                let visualBlock = '<div class="md:w-5/12 hidden md:block"></div>';
-                if (event.photo) {
-                    visualBlock = `
-                        <div class="md:w-5/12 ${isEven ? 'md:pl-12' : 'md:pr-12'} w-full pl-8 md:pl-0">
-                            <div class="photo-frame ${event.photo.style}">
-                                <div class="photo-inner ${event.photo.style.split(' ')[0]}">
-                                    ${event.photo.icon}
-                                </div>
-                                <p class="text-center font-serif text-sm mt-3 text-gray-800">${event.photo.caption}</p>
-                            </div>
+                day.timeline.forEach((event, index) => {
+                    const row = document.createElement('div');
+                    row.className = "relative flex flex-col md:flex-row md:justify-between items-start md:items-center group w-full";
+                    
+                    const isEven = index % 2 === 0;
+
+                    const timeBlock = `
+                        <div class="md:w-5/12 ${isEven ? 'md:text-right md:pr-12' : 'md:text-left md:pl-12 order-last'} mb-4 md:mb-0 relative w-full pl-8 md:pl-0">
+                            ${isEven ? '<div class="hidden md:block timeline-dot right-[-41px] left-auto"></div>' : ''}
+                            ${!isEven ? '<div class="hidden md:block timeline-dot left-[-41px]"></div>' : ''}
+                            <div class="md:hidden timeline-dot"></div>
+                            <span class="text-ocean-600 font-bold text-sm tracking-widest uppercase mb-1 block">${event.time}</span>
+                            <h4 class="text-xl font-serif text-gray-900 mb-2">${event.title}</h4>
+                            <p class="text-gray-600 leading-relaxed">${event.desc}</p>
                         </div>
                     `;
-                } else if (window.innerWidth < 768) {
-                    visualBlock = '';
-                }
 
-                if (isEven) {
-                    row.innerHTML = timeBlock + `<div class="md:w-2/12 hidden md:flex justify-center"></div>` + visualBlock;
-                } else {
-                    row.innerHTML = visualBlock + `<div class="md:w-2/12 hidden md:flex justify-center"></div>` + timeBlock;
-                }
+                    let visualBlock = '<div class="md:w-5/12 hidden md:block"></div>';
+                    if (event.photo) {
+                        visualBlock = `
+                            <div class="md:w-5/12 ${isEven ? 'md:pl-12' : 'md:pr-12'} w-full pl-8 md:pl-0">
+                                <div class="photo-frame ${event.photo.style}">
+                                    <div class="photo-inner ${event.photo.style.split(' ')[0]}">
+                                        ${event.photo.icon}
+                                    </div>
+                                    <p class="text-center font-serif text-sm mt-3 text-gray-800">${event.photo.caption}</p>
+                                </div>
+                            </div>
+                        `;
+                    } else if (window.innerWidth < 768) {
+                        visualBlock = '';
+                    }
 
-                tlContainer.appendChild(row);
-            });
+                    if (isEven) {
+                        row.innerHTML = timeBlock + `<div class="md:w-2/12 hidden md:flex justify-center"></div>` + visualBlock;
+                    } else {
+                        row.innerHTML = visualBlock + `<div class="md:w-2/12 hidden md:flex justify-center"></div>` + timeBlock;
+                    }
+
+                    tlContainer.appendChild(row);
+                });
+            }
         }
 
         window.onload = () => {
