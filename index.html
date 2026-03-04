@@ -334,32 +334,194 @@
         // Main Itinerary Data
         const itineraryData = [
             {
-                id: 1, dayNum: 1, date: "19 March", title: "Arrival + Cliff + Sunset Vibes", note: "👉 Easy first day. No vehicles needed.", dressCode: "👕 Casual travel wear & light evening resort wear.", vibe: [90, 20, 50, 60],
+                id: 1,
+                dayNum: 1,
+                date: "19 March",
+                title: "Arrival + Cliff + Sunset Vibes",
+                note: "👉 Easy first day. No vehicles needed.",
+                dressCode: "👕 Casual travel wear & light evening resort wear.",
+                vibe: [90, 20, 50, 60],
                 timeline: [
-                    { time: "11:25 AM", type: "travel", title: "Arrival at TRV", desc: "✈️ Arrive at Thiruvananthapuram International Airport. Take a taxi to Varkala.", photo: null },
-                    { time: "1:30 PM", type: "stay", title: "Check-in & Settle", desc: "Arrive and check-in at Premium cottages @ Dolphin bay.", photo: { icon: "🛖", style: "bg-gradient-forest", caption: "Dolphin bay" } },
-                    { time: "Evening", type: "explore", title: "Walkable Exploration", desc: "Explore North Cliff Road and catch the beautiful sunset at Varkala Beach.", photo: { icon: "🌅", style: "bg-gradient-sunset", caption: "Sunset at Varkala Beach" } },
+                    {
+                        time: "11:25 AM",
+                        type: "travel",
+                        title: "Arrival at TRV",
+                        desc: "✈️ Arrive at Thiruvananthapuram International Airport. Take a 🚖 Taxi to Varkala (approx. 1 hr 15 min travel time).",
+                        photo: null
+                    },
+                    {
+                        time: "1:30–2:00 PM",
+                        type: "stay",
+                        title: "Check-in & Settle",
+                        desc: "Arrive and check-in at Premium cottages @ Dolphin bay.",
+                        photo: { icon: "🛖", style: "bg-gradient-forest", caption: "Premium cottages @ Dolphin bay" }
+                    },
+                    {
+                        time: "Afternoon",
+                        type: "food",
+                        title: "Lunch & Rest",
+                        desc: "Grab lunch near North Cliff, then head back to the cottage to rest after your travel.",
+                        photo: null
+                    },
+                    {
+                        time: "Evening",
+                        type: "explore",
+                        title: "Walkable Exploration",
+                        desc: "Explore North Cliff Road and enjoy some flea market browsing. Catch the beautiful sunset at Varkala Beach.",
+                        photo: { icon: "🌅", style: "bg-gradient-sunset", caption: "Sunset at Varkala Beach" }
+                    },
+                    {
+                        time: "Night",
+                        type: "food",
+                        title: "Dinner & Stroll",
+                        desc: "Dinner at Asparagus, followed by a relaxing post-dinner cliff walk.",
+                        photo: null
+                    }
                 ]
             },
             {
-                id: 2, dayNum: 2, date: "20 March", title: "Surf + North Beaches Explorer Day", note: "👉 This day covers almost all scenic coastal spots in one smooth ride.", dressCode: "🩳 Swimwear (morning) changing to breezy beachwear/shorts.", vibe: [40, 90, 70, 50],
+                id: 2,
+                dayNum: 2,
+                date: "20 March",
+                title: "Surf + North Beaches Explorer Day",
+                note: "👉 This day covers almost all scenic coastal spots in one smooth ride (15–20 km total riding).",
+                dressCode: "🩳 Swimwear (morning) changing to breezy beachwear/shorts for scooty ride.",
+                vibe: [40, 90, 70, 50],
                 timeline: [
-                    { time: "7:00 AM", type: "action", title: "Surf Session 1", desc: "🌊 Morning surf session to kick off the day. Followed by breakfast.", photo: { icon: "🏄", style: "bg-gradient-sunset", caption: "Early morning waves" } },
-                    { time: "Daytime", type: "explore", title: "Beach Circuit (North Route)", desc: "Edava Beach ➝ Varkala Tunnel ➝ Kappil Beach ➝ Varkala Black Sand Beach ➝ Aquarium.", photo: { icon: "🛵", style: "bg-gradient-forest alt-rotate", caption: "Coastal route" } },
+                    {
+                        time: "7:00 AM",
+                        type: "action",
+                        title: "Surf Session 1",
+                        desc: "🌊 Morning surf session to kick off the day. Followed by breakfast at a cliff café.",
+                        photo: { icon: "🏄", style: "bg-gradient-sunset", caption: "Early morning waves" }
+                    },
+                    {
+                        time: "Mid-Morning",
+                        type: "travel",
+                        title: "Scooty Rental",
+                        desc: "Rent a Scooty from North Cliff to begin your beach circuit.",
+                        photo: null
+                    },
+                    {
+                        time: "Daytime",
+                        type: "explore",
+                        title: "Beach Circuit (North Route)",
+                        desc: "Follow the same direction with no backtracking: Edava Beach ➝ Varkala Tunnel ➝ Kappil Beach ➝ Varkala Black Sand Beach ➝ Varkala Aquarium.",
+                        photo: { icon: "🛵", style: "bg-gradient-forest alt-rotate", caption: "Cruising the coastal route" }
+                    },
+                    {
+                        time: "Late Afternoon",
+                        type: "stay",
+                        title: "Return & Rest",
+                        desc: "Return to the hotel for some necessary rest.",
+                        photo: null
+                    },
+                    {
+                        time: "Evening",
+                        type: "explore",
+                        title: "Thanni Beach Sunset",
+                        desc: "Drive out to catch the sunset at Thanni Beach. Return for dinner at North Cliff.",
+                        photo: null
+                    }
                 ]
             },
             {
-                id: 3, dayNum: 3, date: "21 March", title: "Surf + Temple + Mangrove Kayaking", note: "👉 This is most peaceful and romantic day.", dressCode: "🥻 Modest clothing for temple, activewear for kayaking.", vibe: [80, 40, 30, 95],
+                id: 3,
+                dayNum: 3,
+                date: "21 March",
+                title: "Surf + Temple + Mangrove Kayaking",
+                note: "👉 This is your most peaceful and romantic day.",
+                dressCode: "🥻 Modest clothing for temple (shoulders/knees covered), activewear for kayaking.",
+                vibe: [80, 40, 30, 95],
                 timeline: [
-                    { time: "Late Morning", type: "explore", title: "Spiritual Visit", desc: "Visit the historic Janardanaswamy Temple.", photo: { icon: "🛕", style: "bg-gradient-temple", caption: "Janardanaswamy Temple" } },
-                    { time: "4:00 PM (Sunset)", type: "action", title: "Mangrove Kayaking", desc: "🚣 Mangrove Forest Kayaking on the Paravur side.", photo: { icon: "🛶", style: "bg-gradient-forest", caption: "Golden hour mangroves" } },
+                    {
+                        time: "7:00 AM",
+                        type: "action",
+                        title: "Surf Session 2",
+                        desc: "🌊 Second morning surf session, followed by a hearty breakfast.",
+                        photo: null
+                    },
+                    {
+                        time: "Late Morning",
+                        type: "explore",
+                        title: "Spiritual Visit",
+                        desc: "Visit the historic Janardanaswamy Temple (Spend about 30–40 mins here).",
+                        photo: { icon: "🛕", style: "bg-gradient-temple", caption: "Janardanaswamy Temple" }
+                    },
+                    {
+                        time: "Afternoon",
+                        type: "relax",
+                        title: "Deep Relaxation",
+                        desc: "Rest at the cottage or opt for a couple's Ayurvedic massage.",
+                        photo: null
+                    },
+                    {
+                        time: "4:00 PM (Sunset)",
+                        type: "action",
+                        title: "Mangrove Kayaking",
+                        desc: "Evening Highlight: 🚣 Mangrove Forest Kayaking on the Paravur side (20–25 min from Varkala). Best experienced around sunset.",
+                        photo: { icon: "🛶", style: "bg-gradient-forest", caption: "Golden hour in the mangroves" }
+                    },
+                    {
+                        time: "Night",
+                        type: "food",
+                        title: "Chill Evening",
+                        desc: "Return to North Cliff for café hopping, live music, and dessert.",
+                        photo: null
+                    }
                 ]
             },
             {
-                id: 4, dayNum: 4, date: "22 March", title: "Surf + Jatayu + Elephant Park", note: "👉 Only long-drive day. Everything else is relaxed.", dressCode: "👟 Comfortable walking shoes, breathable cottons.", vibe: [30, 85, 90, 40],
+                id: 4,
+                dayNum: 4,
+                date: "22 March",
+                title: "Surf + Jatayu + Elephant Park",
+                note: "👉 Only long-drive day. Everything else is relaxed.",
+                dressCode: "👟 Comfortable walking shoes, breathable cottons for inland heat.",
+                vibe: [30, 85, 90, 40],
                 timeline: [
-                    { time: "Mid-Day", type: "explore", title: "Jatayu Earth's Center", desc: "1️⃣ Take the cable car ride to the giant sculpture viewpoint.", photo: { icon: "🦅", style: "bg-gradient-temple alt-rotate", caption: "Jatayu giant sculpture" } },
-                    { time: "Afternoon", type: "explore", title: "Kaveri Elephant Park", desc: "2️⃣ Visit the park for an elephant interaction experience.", photo: { icon: "🐘", style: "bg-gradient-forest", caption: "Gentle giants" } },
+                    {
+                        time: "7:00 AM",
+                        type: "action",
+                        title: "Final Surf Session",
+                        desc: "🌊 Surf session 3 to catch your last Varkala waves.",
+                        photo: null
+                    },
+                    {
+                        time: "10:00 AM",
+                        type: "travel",
+                        title: "Half-Day Excursion",
+                        desc: "Hire a Cab for a half-day trip inland.",
+                        photo: null
+                    },
+                    {
+                        time: "Mid-Day",
+                        type: "explore",
+                        title: "Jatayu Earth's Center",
+                        desc: "1️⃣ Take the cable car ride to the giant sculpture viewpoint. Spend 2–3 hours exploring.",
+                        photo: { icon: "🦅", style: "bg-gradient-temple alt-rotate", caption: "Jatayu giant sculpture" }
+                    },
+                    {
+                        time: "Afternoon",
+                        type: "explore",
+                        title: "Kaveri Elephant Park",
+                        desc: "2️⃣ Visit the park for an elephant interaction experience.",
+                        photo: { icon: "🐘", style: "bg-gradient-forest", caption: "Gentle giants at Kaveri" }
+                    },
+                    {
+                        time: "Evening",
+                        type: "relax",
+                        title: "Return & Final Sunset",
+                        desc: "Return to Varkala by evening. Watch your final sunset at Varkala Beach.",
+                        photo: null
+                    },
+                    {
+                        time: "Night",
+                        type: "food",
+                        title: "Farewell Dinner",
+                        desc: "Enjoy a special dinner at North Cliff and take one last cliff walk.",
+                        photo: null
+                    }
                 ]
             }
         ];
