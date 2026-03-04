@@ -2,11 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAJTSURBVHgB7VdLaxNRGP0m06SptS8S0SotYruSInXpYmXpwi66E6S4E8SNC/8At+79C7p0Ly66E6S4E8SNC0XRhSAtSIs+SIsS06SptS8m08S5v9SkaS7TfDDBFz44M/fOuef77p17Z86EqBIPHjxglf9CofBeFMWfDCHYfW96elqXJMkvCH7mAtvIdR74k5OTo6Zp3onH430A8oO6N0H4h0KhV0K0t6y38/v9TzH9H6PRaIdpmn8Rfhv65X3X0A766FpXV9czXG8hW3kI78N6O7Is78V9N9COvO8a2mX7RNPf09PTfXmO0H6fT/9AofBeFMWfwLp7Y2NjyXg8PgAiP6h7E4RvLBZ7DcHfst7O7/dvYfo/fD7fS4Tfhj6W672I7y+u7Oxs9+Dg4BCEv5DP5/vT19f3Et9fXNnZ2e7BwcEhCH8hn8/3p6+v7yW+v7iy2Wyr7pFIJI6Xv3Y0S3tLS8vTQqHwXhTFn8C6e2NjY8l4PD4AIj+oexOEbywWew3B37Lezu/3b2H6P3w+30uE34Y+luv9H+D9O+vtyLJ8APfdQDvru4Z22f7S9He1tra+YvDhw8fMsr/09PS0LkmS/4fD7YfD/fP5/HtMv9NoNHrP7u7u54A8mNfrvY/p91EUxS8IPvZ6vc8x/Y7f73+J6Uf9fv8XBN97v9//EtPv+P3+l5h+1O/3f0HwvfO/A67vW0NDQ88x/U6j0eg9u7u7nwPyYF6v9z6m30dRFL96PB4fAJEf1L0Jwj8UCr0Sohv/v8Uf8A6tY65B3N63GAAAAABJRU5ErkJggg==">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Varkala Escape: 4-Day Itinerary</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Leaflet JS & CSS for Interactive Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
@@ -38,11 +42,12 @@
     </script>
     <style>
         <!-- Chosen Palette: Warm Sand & Tropical Ocean (Beige, Soft Blue, Deep Teal, Sunset Orange) -->
-        <!-- Application Structure Plan: The SPA uses a dashboard-style layout to present the itinerary. It begins with a high-level overview and an interactive "Daily Vibe" radar chart to set expectations. The core is an interactive tabbed timeline, allowing users to focus on one day at a time, preventing information overload. A new dedicated "Budget & Spa" tab has been added to isolate financial planning from the day-to-day experience. -->
+        <!-- Application Structure Plan: The SPA uses a dashboard-style layout to present the itinerary. The Map tab has been upgraded to include day-by-day filtering, dynamic bounds adjustment, and comprehensive location plotting to solve data crowding and missing locations. -->
         <!-- Visualization & Content Choices: 
-          1. Radar Chart (Chart.js): Maps the changing 'vibe' (Relax, Explore, Travel, Romance) of each day.
-          2. Tabbed Timeline (HTML/JS): Organizes the dense chronological data into digestible views.
-          3. Budget & Spa View: Uses responsive Tailwind tables and highlight cards to display financial data clearly. 
+          1. Radar Chart (Chart.js): Maps the changing 'vibe'.
+          2. Tabbed Timeline (HTML/JS): Digestible day views.
+          3. Budget & Spa View: Tailwind tables and highlight cards.
+          4. Interactive Map (Leaflet): Dynamic markers using layer groups, bounds fitting per day, and dual-color custom HTML markers to distinguish activities vs. dining.
         -->
         <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
         
@@ -127,6 +132,20 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
         }
+
+        /* Leaflet Map Customizations */
+        .leaflet-popup-content-wrapper {
+            border-radius: 0.75rem;
+            font-family: 'Outfit', sans-serif;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .leaflet-popup-content {
+            margin: 14px 16px;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
     </style>
 </head>
 <body class="antialiased min-h-screen">
@@ -169,9 +188,9 @@
 
     <main class="max-w-6xl mx-auto px-6 py-12">
         
-        <section class="mb-16">
+        <section class="mb-16 hidden md:block">
             <h2 class="text-3xl font-serif text-ocean-900 mb-4">Trip Dynamics & Overview</h2>
-            <p class="text-gray-700 max-w-3xl mb-8">This section visualizes the shifting tempo of your trip. The radar chart below breaks down the primary focus of each day, helping you understand when to conserve energy and when to prepare for adventure. Use the buttons below to filter the chart.</p>
+            <p class="text-gray-700 max-w-3xl mb-8">This section visualizes the shifting tempo of your trip. The radar chart below breaks down the primary focus of each day, helping you understand when to conserve energy and when to prepare for adventure.</p>
             
             <div class="bg-white rounded-2xl shadow-sm border border-sand-200 p-6 md:p-8 flex flex-col md:flex-row gap-8 items-center">
                 <div class="w-full md:w-1/2 flex flex-col justify-center gap-4">
@@ -188,13 +207,13 @@
 
         <section id="itinerary-section">
             <h2 class="text-3xl font-serif text-ocean-900 mb-4">Interactive Daily Planner</h2>
-            <p class="text-gray-700 max-w-3xl mb-8">Navigate through your day-by-day schedule or view your complete trip budget and spa details using the tabs below.</p>
+            <p class="text-gray-700 max-w-3xl mb-8">Navigate through your day-by-day schedule, view your budget, or explore the daily dining map using the tabs below.</p>
 
             <div class="flex flex-wrap gap-2 mb-8 border-b border-sand-200 pb-4" id="dayTabs">
                 <!-- Tabs injected by JS -->
             </div>
 
-            <div class="bg-white rounded-2xl shadow-sm border border-sand-200 p-6 md:p-10 min-h-[500px]">
+            <div class="bg-white rounded-2xl shadow-sm border border-sand-200 p-6 md:p-10 min-h-[600px]">
                 
                 <!-- Timeline Container (Days 1-4) -->
                 <div id="itineraryContent">
@@ -227,7 +246,6 @@
                     </h3>
                     
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
-                        <!-- Highlight Cards -->
                         <div class="bg-ocean-50 border border-ocean-200 rounded-xl p-6 shadow-sm">
                             <div class="text-ocean-600 text-sm font-bold uppercase tracking-wide mb-1">Total Pre-Booked</div>
                             <div class="text-4xl font-serif text-ocean-900 mb-2">₹53,863.63</div>
@@ -240,7 +258,6 @@
                         </div>
                     </div>
 
-                    <!-- Budget Table -->
                     <h4 class="text-xl font-bold text-gray-900 mb-4 border-b border-sand-200 pb-2">Complete Budget Breakdown</h4>
                     <div class="overflow-x-auto mb-12 rounded-lg border border-sand-200">
                         <table class="w-full text-left border-collapse">
@@ -252,36 +269,12 @@
                                 </tr>
                             </thead>
                             <tbody class="divide-y divide-sand-200 text-gray-700 bg-white">
-                                <tr>
-                                    <td class="p-4"><span class="bg-ocean-100 text-ocean-800 text-xs px-2 py-1 rounded font-bold">Pre-Booked</span></td>
-                                    <td class="p-4">Round Trip Flights</td>
-                                    <td class="p-4 text-right font-medium">₹34,507.00</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4"><span class="bg-ocean-100 text-ocean-800 text-xs px-2 py-1 rounded font-bold">Pre-Booked</span></td>
-                                    <td class="p-4">Stay @ Premium Cottages, Dolphin Bay</td>
-                                    <td class="p-4 text-right font-medium">₹19,356.63</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4"><span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded font-bold">Estimate</span></td>
-                                    <td class="p-4">Activities (Surf x3, Kayak, Jatayu, Elephant Park)</td>
-                                    <td class="p-4 text-right font-medium">₹12,968.00</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4"><span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded font-bold">Estimate</span></td>
-                                    <td class="p-4">Local Transport (Airport Taxi, Scooty, Half-Day Cab)</td>
-                                    <td class="p-4 text-right font-medium">₹6,200.00</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4"><span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded font-bold">Estimate</span></td>
-                                    <td class="p-4">Food & Dining (Including specialty cliff dinners)</td>
-                                    <td class="p-4 text-right font-medium">₹13,500.00</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4"><span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded font-bold">Estimate</span></td>
-                                    <td class="p-4">Couple's Ayurvedic Spa Session</td>
-                                    <td class="p-4 text-right font-medium">₹5,500.00</td>
-                                </tr>
+                                <tr><td class="p-4"><span class="bg-ocean-100 text-ocean-800 text-xs px-2 py-1 rounded font-bold">Pre-Booked</span></td><td class="p-4">Round Trip Flights</td><td class="p-4 text-right font-medium">₹34,507.00</td></tr>
+                                <tr><td class="p-4"><span class="bg-ocean-100 text-ocean-800 text-xs px-2 py-1 rounded font-bold">Pre-Booked</span></td><td class="p-4">Stay @ Premium Cottages, Dolphin Bay</td><td class="p-4 text-right font-medium">₹19,356.63</td></tr>
+                                <tr><td class="p-4"><span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded font-bold">Estimate</span></td><td class="p-4">Activities (Surf x3, Kayak, Jatayu, Elephant Park)</td><td class="p-4 text-right font-medium">₹12,968.00</td></tr>
+                                <tr><td class="p-4"><span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded font-bold">Estimate</span></td><td class="p-4">Local Transport (Airport Taxi, Scooty, Half-Day Cab)</td><td class="p-4 text-right font-medium">₹6,200.00</td></tr>
+                                <tr><td class="p-4"><span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded font-bold">Estimate</span></td><td class="p-4">Food & Dining (Including specialty cliff dinners)</td><td class="p-4 text-right font-medium">₹13,500.00</td></tr>
+                                <tr><td class="p-4"><span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded font-bold">Estimate</span></td><td class="p-4">Couple's Ayurvedic Spa Session</td><td class="p-4 text-right font-medium">₹5,500.00</td></tr>
                             </tbody>
                             <tfoot>
                                 <tr class="bg-sand-50 font-bold text-ocean-900 border-t-[3px] border-sand-200">
@@ -291,77 +284,40 @@
                             </tfoot>
                         </table>
                     </div>
+                </div>
 
-                    <!-- Transportation Rates Table -->
-                    <h4 class="text-xl font-bold text-gray-900 mb-4 border-b border-sand-200 pb-2">Local Transportation Rate Guide</h4>
-                    <div class="overflow-x-auto mb-12 rounded-lg border border-sand-200">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-sand-100 text-ocean-900">
-                                    <th class="p-4 font-semibold border-b border-sand-200">Transport Type</th>
-                                    <th class="p-4 font-semibold border-b border-sand-200">Use Case</th>
-                                    <th class="p-4 font-semibold text-right border-b border-sand-200">Estimated Price (INR)</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-sand-200 text-gray-700 bg-white">
-                                <tr>
-                                    <td class="p-4 font-medium text-ocean-900">✈️ Airport Taxi (One-Way)</td>
-                                    <td class="p-4">TRV Airport to Varkala Cliff (~50km ride)</td>
-                                    <td class="p-4 text-right font-medium">₹1,500 - ₹1,800</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4 font-medium text-ocean-900">🛵 Scooty / 2-Wheeler</td>
-                                    <td class="p-4">Daily rental for beach hopping (Excludes petrol)</td>
-                                    <td class="p-4 text-right font-medium">₹400 - ₹500 / day</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4 font-medium text-ocean-900">🚘 Half-Day Cab (AC)</td>
-                                    <td class="p-4">Jatayu & Elephant Park round trip (~4-5 hours)</td>
-                                    <td class="p-4 text-right font-medium">₹1,800 - ₹2,200</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4 font-medium text-ocean-900">🛺 Local Auto Rickshaw</td>
-                                    <td class="p-4">Short point-to-point trips around town/cliff</td>
-                                    <td class="p-4 text-right font-medium">₹100 - ₹200 / trip</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <!-- Cafes & Dining Map Container (Tab 6) -->
+                <div id="mapContent" class="hidden animate-fade-in flex flex-col h-full">
+                    <h3 class="text-3xl font-serif text-ocean-900 mb-2 flex items-center gap-3">
+                        <span>🗺️</span> Daily Dining & Exploration Map
+                    </h3>
+                    <p class="text-gray-600 mb-6 flex gap-4 items-center flex-wrap">
+                        <span>Select a day to filter locations.</span>
+                        <span class="inline-flex items-center gap-1.5 text-sm bg-sand-100 px-3 py-1 rounded-full border border-sand-200"><span class="w-3 h-3 rounded-full bg-ocean-500 block"></span> Visiting</span>
+                        <span class="inline-flex items-center gap-1.5 text-sm bg-sand-100 px-3 py-1 rounded-full border border-sand-200"><span class="w-3 h-3 rounded-full bg-sunset-500 block"></span> Dining</span>
+                    </p>
+                    
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 flex-grow">
+                        <!-- Sidebar Panel -->
+                        <div class="lg:col-span-2 flex flex-col bg-white border border-sand-200 rounded-xl overflow-hidden h-[400px] lg:h-[600px] shadow-sm">
+                            
+                            <!-- Internal Day Tabs for Map Filter -->
+                            <div class="flex border-b border-sand-200 bg-sand-50 overflow-x-auto custom-scrollbar" id="mapDaySelector">
+                                <!-- Day Filters injected via JS -->
+                            </div>
 
-                    <!-- Spa Table -->
-                    <h4 class="text-xl font-bold text-gray-900 mb-4 border-b border-sand-200 pb-2">Top Rated Couple Spa Options</h4>
-                    <div class="overflow-x-auto rounded-lg border border-sand-200">
-                        <table class="w-full text-left border-collapse">
-                            <thead>
-                                <tr class="bg-sand-100 text-ocean-900">
-                                    <th class="p-4 font-semibold border-b border-sand-200">Wellness Center</th>
-                                    <th class="p-4 font-semibold border-b border-sand-200">Google Rating</th>
-                                    <th class="p-4 font-semibold text-right border-b border-sand-200">Est. Couple Price (INR)</th>
-                                </tr>
-                            </thead>
-                            <tbody class="divide-y divide-sand-200 text-gray-700 bg-white">
-                                <tr class="bg-ocean-50 relative">
-                                    <td class="p-4 font-bold text-ocean-900">
-                                        Praana Spa and Wellness by Sarwaa
-                                        <span class="ml-2 bg-ocean-600 text-white text-[10px] uppercase px-2 py-0.5 rounded-full relative -top-0.5">Recommended</span>
-                                    </td>
-                                    <td class="p-4 font-medium text-gray-900">⭐ 4.8 / 5.0</td>
-                                    <td class="p-4 text-right font-bold text-ocean-900">~ ₹5,500</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4">Jiva Spa (Taj Gateway)</td>
-                                    <td class="p-4">⭐ 4.9 / 5.0</td>
-                                    <td class="p-4 text-right">~ ₹8,500</td>
-                                </tr>
-                                <tr>
-                                    <td class="p-4">Oceano Cliff Ayurvedic Centre</td>
-                                    <td class="p-4">⭐ 4.5 / 5.0</td>
-                                    <td class="p-4 text-right">~ ₹4,000</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                            <!-- List Content per Day -->
+                            <div class="flex-grow overflow-y-auto p-4 custom-scrollbar" id="mapListContainer">
+                                <!-- Populated by JS -->
+                            </div>
+
+                        </div>
+                        
+                        <!-- Interactive Map -->
+                        <div class="lg:col-span-3 h-[400px] lg:h-[600px] rounded-xl border border-sand-200 shadow-inner overflow-hidden relative z-0">
+                            <div id="varkalaMap" class="w-full h-full relative z-0"></div>
+                        </div>
                     </div>
-                    <p class="text-sm text-gray-500 mt-3 italic">*Prices are estimates for a standard 60-90 minute couple's relaxation or Ayurvedic massage. Booking 1-2 days in advance is highly recommended.</p>
                 </div>
 
             </div>
@@ -375,259 +331,116 @@
     </footer>
 
     <script>
+        // Main Itinerary Data
         const itineraryData = [
             {
-                id: 1,
-                dayNum: 1,
-                date: "19 March",
-                title: "Arrival + Cliff + Sunset Vibes",
-                note: "👉 Easy first day. No vehicles needed.",
-                dressCode: "👕 Casual travel wear & light evening resort wear.",
-                vibe: [90, 20, 50, 60],
+                id: 1, dayNum: 1, date: "19 March", title: "Arrival + Cliff + Sunset Vibes", note: "👉 Easy first day. No vehicles needed.", dressCode: "👕 Casual travel wear & light evening resort wear.", vibe: [90, 20, 50, 60],
                 timeline: [
-                    {
-                        time: "11:25 AM",
-                        type: "travel",
-                        title: "Arrival at TRV",
-                        desc: "✈️ Arrive at Thiruvananthapuram International Airport. Take a 🚖 Taxi to Varkala (approx. 1 hr 15 min travel time).",
-                        photo: null
-                    },
-                    {
-                        time: "1:30–2:00 PM",
-                        type: "stay",
-                        title: "Check-in & Settle",
-                        desc: "Arrive and check-in at Premium cottages @ Dolphin bay.",
-                        photo: { icon: "🛖", style: "bg-gradient-forest", caption: "Premium cottages @ Dolphin bay" }
-                    },
-                    {
-                        time: "Afternoon",
-                        type: "food",
-                        title: "Lunch & Rest",
-                        desc: "Grab lunch near North Cliff, then head back to the cottage to rest after your travel.",
-                        photo: null
-                    },
-                    {
-                        time: "Evening",
-                        type: "explore",
-                        title: "Walkable Exploration",
-                        desc: "Explore North Cliff Road and enjoy some flea market browsing. Catch the beautiful sunset at Varkala Beach.",
-                        photo: { icon: "🌅", style: "bg-gradient-sunset", caption: "Sunset at Varkala Beach" }
-                    },
-                    {
-                        time: "Night",
-                        type: "food",
-                        title: "Dinner & Stroll",
-                        desc: "Dinner at Asparagus, followed by a relaxing post-dinner cliff walk.",
-                        photo: null
-                    }
+                    { time: "11:25 AM", type: "travel", title: "Arrival at TRV", desc: "✈️ Arrive at Thiruvananthapuram International Airport. Take a taxi to Varkala.", photo: null },
+                    { time: "1:30 PM", type: "stay", title: "Check-in & Settle", desc: "Arrive and check-in at Premium cottages @ Dolphin bay.", photo: { icon: "🛖", style: "bg-gradient-forest", caption: "Dolphin bay" } },
+                    { time: "Evening", type: "explore", title: "Walkable Exploration", desc: "Explore North Cliff Road and catch the beautiful sunset at Varkala Beach.", photo: { icon: "🌅", style: "bg-gradient-sunset", caption: "Sunset at Varkala Beach" } },
                 ]
             },
             {
-                id: 2,
-                dayNum: 2,
-                date: "20 March",
-                title: "Surf + North Beaches Explorer Day",
-                note: "👉 This day covers almost all scenic coastal spots in one smooth ride (15–20 km total riding).",
-                dressCode: "🩳 Swimwear (morning) changing to breezy beachwear/shorts for scooty ride.",
-                vibe: [40, 90, 70, 50],
+                id: 2, dayNum: 2, date: "20 March", title: "Surf + North Beaches Explorer Day", note: "👉 This day covers almost all scenic coastal spots in one smooth ride.", dressCode: "🩳 Swimwear (morning) changing to breezy beachwear/shorts.", vibe: [40, 90, 70, 50],
                 timeline: [
-                    {
-                        time: "7:00 AM",
-                        type: "action",
-                        title: "Surf Session 1",
-                        desc: "🌊 Morning surf session to kick off the day. Followed by breakfast at a cliff café.",
-                        photo: { icon: "🏄", style: "bg-gradient-sunset", caption: "Early morning waves" }
-                    },
-                    {
-                        time: "Mid-Morning",
-                        type: "travel",
-                        title: "Scooty Rental",
-                        desc: "Rent a Scooty from North Cliff to begin your beach circuit.",
-                        photo: null
-                    },
-                    {
-                        time: "Daytime",
-                        type: "explore",
-                        title: "Beach Circuit (North Route)",
-                        desc: "Follow the same direction with no backtracking: Edava Beach ➝ Varkala Tunnel ➝ Kappil Beach ➝ Varkala Black Sand Beach ➝ Varkala Aquarium.",
-                        photo: { icon: "🛵", style: "bg-gradient-forest alt-rotate", caption: "Cruising the coastal route" }
-                    },
-                    {
-                        time: "Late Afternoon",
-                        type: "stay",
-                        title: "Return & Rest",
-                        desc: "Return to the hotel for some necessary rest.",
-                        photo: null
-                    },
-                    {
-                        time: "Evening",
-                        type: "explore",
-                        title: "Thanni Beach Sunset",
-                        desc: "Drive out to catch the sunset at Thanni Beach. Return for dinner at North Cliff.",
-                        photo: null
-                    }
+                    { time: "7:00 AM", type: "action", title: "Surf Session 1", desc: "🌊 Morning surf session to kick off the day. Followed by breakfast.", photo: { icon: "🏄", style: "bg-gradient-sunset", caption: "Early morning waves" } },
+                    { time: "Daytime", type: "explore", title: "Beach Circuit (North Route)", desc: "Edava Beach ➝ Varkala Tunnel ➝ Kappil Beach ➝ Varkala Black Sand Beach ➝ Aquarium.", photo: { icon: "🛵", style: "bg-gradient-forest alt-rotate", caption: "Coastal route" } },
                 ]
             },
             {
-                id: 3,
-                dayNum: 3,
-                date: "21 March",
-                title: "Surf + Temple + Mangrove Kayaking",
-                note: "👉 This is your most peaceful and romantic day.",
-                dressCode: "🥻 Modest clothing for temple (shoulders/knees covered), activewear for kayaking.",
-                vibe: [80, 40, 30, 95],
+                id: 3, dayNum: 3, date: "21 March", title: "Surf + Temple + Mangrove Kayaking", note: "👉 This is your most peaceful and romantic day.", dressCode: "🥻 Modest clothing for temple, activewear for kayaking.", vibe: [80, 40, 30, 95],
                 timeline: [
-                    {
-                        time: "7:00 AM",
-                        type: "action",
-                        title: "Surf Session 2",
-                        desc: "🌊 Second morning surf session, followed by a hearty breakfast.",
-                        photo: null
-                    },
-                    {
-                        time: "Late Morning",
-                        type: "explore",
-                        title: "Spiritual Visit",
-                        desc: "Visit the historic Janardanaswamy Temple (Spend about 30–40 mins here).",
-                        photo: { icon: "🛕", style: "bg-gradient-temple", caption: "Janardanaswamy Temple" }
-                    },
-                    {
-                        time: "Afternoon",
-                        type: "relax",
-                        title: "Deep Relaxation",
-                        desc: "Rest at the cottage or opt for a couple's Ayurvedic massage.",
-                        photo: null
-                    },
-                    {
-                        time: "4:00 PM (Sunset)",
-                        type: "action",
-                        title: "Mangrove Kayaking",
-                        desc: "Evening Highlight: 🚣 Mangrove Forest Kayaking on the Paravur side (20–25 min from Varkala). Best experienced around sunset.",
-                        photo: { icon: "🛶", style: "bg-gradient-forest", caption: "Golden hour in the mangroves" }
-                    },
-                    {
-                        time: "Night",
-                        type: "food",
-                        title: "Chill Evening",
-                        desc: "Return to North Cliff for café hopping, live music, and dessert.",
-                        photo: null
-                    }
+                    { time: "Late Morning", type: "explore", title: "Spiritual Visit", desc: "Visit the historic Janardanaswamy Temple.", photo: { icon: "🛕", style: "bg-gradient-temple", caption: "Janardanaswamy Temple" } },
+                    { time: "4:00 PM (Sunset)", type: "action", title: "Mangrove Kayaking", desc: "🚣 Mangrove Forest Kayaking on the Paravur side.", photo: { icon: "🛶", style: "bg-gradient-forest", caption: "Golden hour mangroves" } },
                 ]
             },
             {
-                id: 4,
-                dayNum: 4,
-                date: "22 March",
-                title: "Surf + Jatayu + Elephant Park",
-                note: "👉 Only long-drive day. Everything else is relaxed.",
-                dressCode: "👟 Comfortable walking shoes, breathable cottons for inland heat.",
-                vibe: [30, 85, 90, 40],
+                id: 4, dayNum: 4, date: "22 March", title: "Surf + Jatayu + Elephant Park", note: "👉 Only long-drive day. Everything else is relaxed.", dressCode: "👟 Comfortable walking shoes, breathable cottons.", vibe: [30, 85, 90, 40],
                 timeline: [
-                    {
-                        time: "7:00 AM",
-                        type: "action",
-                        title: "Final Surf Session",
-                        desc: "🌊 Surf session 3 to catch your last Varkala waves.",
-                        photo: null
-                    },
-                    {
-                        time: "10:00 AM",
-                        type: "travel",
-                        title: "Half-Day Excursion",
-                        desc: "Hire a Cab for a half-day trip inland.",
-                        photo: null
-                    },
-                    {
-                        time: "Mid-Day",
-                        type: "explore",
-                        title: "Jatayu Earth's Center",
-                        desc: "1️⃣ Take the cable car ride to the giant sculpture viewpoint. Spend 2–3 hours exploring.",
-                        photo: { icon: "🦅", style: "bg-gradient-temple alt-rotate", caption: "Jatayu giant sculpture" }
-                    },
-                    {
-                        time: "Afternoon",
-                        type: "explore",
-                        title: "Kaveri Elephant Park",
-                        desc: "2️⃣ Visit the park for an elephant interaction experience.",
-                        photo: { icon: "🐘", style: "bg-gradient-forest", caption: "Gentle giants at Kaveri" }
-                    },
-                    {
-                        time: "Evening",
-                        type: "relax",
-                        title: "Return & Final Sunset",
-                        desc: "Return to Varkala by evening. Watch your final sunset at Varkala Beach.",
-                        photo: null
-                    },
-                    {
-                        time: "Night",
-                        type: "food",
-                        title: "Farewell Dinner",
-                        desc: "Enjoy a special dinner at North Cliff and take one last cliff walk.",
-                        photo: null
-                    }
+                    { time: "Mid-Day", type: "explore", title: "Jatayu Earth's Center", desc: "1️⃣ Take the cable car ride to the giant sculpture viewpoint.", photo: { icon: "🦅", style: "bg-gradient-temple alt-rotate", caption: "Jatayu giant sculpture" } },
+                    { time: "Afternoon", type: "explore", title: "Kaveri Elephant Park", desc: "2️⃣ Visit the park for an elephant interaction experience.", photo: { icon: "🐘", style: "bg-gradient-forest", caption: "Gentle giants" } },
+                ]
+            }
+        ];
+
+        // Comprehensive Map Data mapped strictly to each day
+        const mapData = [
+            {
+                day: 1,
+                date: "March 19",
+                places: [
+                    { id: 'p1_1', name: "Dolphin Bay Cottages", desc: "Your Basecamp Location", coords: [8.7450, 76.7000] },
+                    { id: 'p1_2', name: "Varkala North Cliff", desc: "Evening stroll & flea market", coords: [8.7370, 76.7030] },
+                    { id: 'p1_3', name: "Varkala Beach", desc: "First sunset viewing", coords: [8.7333, 76.7050] }
+                ],
+                cafes: [
+                    { id: 'c1_1', name: "Darjeeling Cafe", tag: "Lunch", rating: "4.5", desc: "Bohemian vibe, fairy lights & great seafood.", coords: [8.7385, 76.7025] },
+                    { id: 'c1_2', name: "Asparagus", tag: "Dinner", rating: "4.6", desc: "Premium Kerala Fusion for your first night.", coords: [8.7360, 76.7035] }
+                ]
+            },
+            {
+                day: 2,
+                date: "March 20",
+                places: [
+                    { id: 'p2_1', name: "Edava Beach", desc: "Quiet stretch on the north route", coords: [8.7566, 76.6890] },
+                    { id: 'p2_2', name: "Varkala Tunnel", desc: "Historic inland water tunnel", coords: [8.7289, 76.7164] },
+                    { id: 'p2_3', name: "Kappil Beach Estuary", desc: "Where the lake meets the sea", coords: [8.7833, 76.6667] },
+                    { id: 'p2_4', name: "Varkala Black Sand Beach", desc: "Unique dark sands (Thiruvambadi)", coords: [8.7455, 76.7011] },
+                    { id: 'p2_5', name: "Varkala Aquarium", desc: "Coastal marine life exhibit", coords: [8.7485, 76.7001] },
+                    { id: 'p2_6', name: "Thanni Beach", desc: "Evening sunset drive destination", coords: [8.8250, 76.6350] }
+                ],
+                cafes: [
+                    { id: 'c2_1', name: "Coffee Temple", tag: "Breakfast", rating: "4.4", desc: "Espresso & vegan options post-surf.", coords: [8.7380, 76.7026] },
+                    { id: 'c2_2', name: "Cafe Italiano", tag: "Dinner", rating: "4.2", desc: "Pizzas, pastas & uninterrupted ocean views.", coords: [8.7375, 76.7028] }
+                ]
+            },
+            {
+                day: 3,
+                date: "March 21",
+                places: [
+                    { id: 'p3_1', name: "Janardanaswamy Temple", desc: "2000-year-old spiritual site", coords: [8.7315, 76.7095] },
+                    { id: 'p3_2', name: "Paravur Lake Mangroves", desc: "Golden hour kayaking spot", coords: [8.7997, 76.6575] }
+                ],
+                cafes: [
+                    { id: 'c3_1', name: "God's Own Country Kitchen", tag: "Lunch", rating: "4.5", desc: "Authentic Kerala meals on banana leaves.", coords: [8.7390, 76.7020] },
+                    { id: 'c3_2', name: "Abba Restaurant & Bakery", tag: "Night Desert", rating: "4.4", desc: "Fresh baked goods and relaxed evening vibe.", coords: [8.7368, 76.7031] }
+                ]
+            },
+            {
+                day: 4,
+                date: "March 22",
+                places: [
+                    { id: 'p4_1', name: "Jatayu Earth's Center", desc: "Giant bird sculpture & cable car", coords: [8.8683, 76.8683] },
+                    { id: 'p4_2', name: "Kaveri Elephant Park", desc: "Inland elephant sanctuary", coords: [8.8150, 76.7550] } 
+                ],
+                cafes: [
+                    { id: 'c4_1', name: "Theeram Restaurant", tag: "Farewell Dinner", rating: "4.6", desc: "Candlelight cliff dining for your final night.", coords: [8.7395, 76.7015] }
                 ]
             }
         ];
 
         let vibeChartInstance = null;
-        let currentDayId = 1; // 1-4 for days, 'budget' for budget tab
+        let mapInstance = null;
+        let mapLayerGroup = null; // Group to easily clear markers
+        let mapMarkers = {};
+        
+        let currentDayId = 1; // Controls main top-level tabs
+        let currentMapDayFilter = 1; // Controls the day filter strictly inside the Map view
 
+        // --- Core UI Initialization ---
         function initChart() {
             const ctx = document.getElementById('vibeChart').getContext('2d');
-            
-            const data = {
-                labels: ['Relaxation', 'Exploration', 'Travel / Drive', 'Romance / Chill'],
-                datasets: [{
-                    label: 'Vibe Intensity',
-                    data: itineraryData[0].vibe,
-                    backgroundColor: 'rgba(14, 165, 233, 0.2)',
-                    borderColor: 'rgba(14, 165, 233, 1)',
-                    pointBackgroundColor: 'rgba(14, 165, 233, 1)',
-                    pointBorderColor: '#fff',
-                    pointHoverBackgroundColor: '#fff',
-                    pointHoverBorderColor: 'rgba(14, 165, 233, 1)',
-                    borderWidth: 2,
-                }]
-            };
-
             const config = {
                 type: 'radar',
-                data: data,
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
-                            grid: { color: 'rgba(0, 0, 0, 0.1)' },
-                            pointLabels: {
-                                font: { family: 'Outfit', size: 12, weight: '600' },
-                                color: '#1f2937'
-                            },
-                            ticks: { display: false, min: 0, max: 100 }
-                        }
-                    },
-                    plugins: {
-                        legend: { display: false },
-                        tooltip: {
-                            backgroundColor: 'rgba(12, 74, 110, 0.9)',
-                            titleFont: { family: 'Outfit', size: 14 },
-                            bodyFont: { family: 'Outfit', size: 13 },
-                            padding: 10,
-                            displayColors: false,
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (label) label += ': ';
-                                    if (context.parsed.y !== null) label += context.parsed.r + '%';
-                                    return label;
-                                }
-                            }
-                        }
-                    }
-                }
+                data: {
+                    labels: ['Relaxation', 'Exploration', 'Travel / Drive', 'Romance / Chill'],
+                    datasets: [{
+                        data: itineraryData[0].vibe, backgroundColor: 'rgba(14, 165, 233, 0.2)', borderColor: 'rgba(14, 165, 233, 1)', pointBackgroundColor: 'rgba(14, 165, 233, 1)', pointBorderColor: '#fff', borderWidth: 2,
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, scales: { r: { ticks: { display: false, min: 0, max: 100 } } }, plugins: { legend: { display: false } } }
             };
-
             vibeChartInstance = new Chart(ctx, config);
         }
 
@@ -641,18 +454,12 @@
         function renderChartControls() {
             const container = document.getElementById('chartControls');
             container.innerHTML = '';
-            
             itineraryData.forEach((day, index) => {
                 const btn = document.createElement('button');
                 btn.className = `text-left px-4 py-3 rounded-xl border transition-all duration-200 ${index === 0 ? 'bg-ocean-50 border-ocean-200 shadow-sm' : 'bg-white border-transparent hover:bg-sand-100'}`;
-                btn.innerHTML = `
-                    <div class="font-bold text-ocean-900">Day ${day.dayNum}</div>
-                    <div class="text-sm text-gray-600 truncate">${day.title}</div>
-                `;
+                btn.innerHTML = `<div class="font-bold text-ocean-900">Day ${day.dayNum}</div><div class="text-sm text-gray-600 truncate">${day.title}</div>`;
                 btn.onclick = () => {
-                    Array.from(container.children).forEach(c => {
-                        c.className = 'text-left px-4 py-3 rounded-xl border transition-all duration-200 bg-white border-transparent hover:bg-sand-100';
-                    });
+                    Array.from(container.children).forEach(c => c.className = 'text-left px-4 py-3 rounded-xl border transition-all duration-200 bg-white border-transparent hover:bg-sand-100');
                     btn.className = 'text-left px-4 py-3 rounded-xl border transition-all duration-200 bg-ocean-50 border-ocean-200 shadow-sm';
                     updateChart(index);
                 };
@@ -660,50 +467,63 @@
             });
         }
 
+        // --- Main Tabs ---
         function renderTabs() {
             const container = document.getElementById('dayTabs');
             container.innerHTML = '';
 
-            // Day Tabs
             itineraryData.forEach((day) => {
                 const btn = document.createElement('button');
                 const isActive = day.id === currentDayId;
-                btn.className = `px-6 py-3 rounded-full font-medium transition-all duration-200 text-sm md:text-base ${isActive ? 'bg-ocean-700 text-white shadow-md' : 'bg-white text-gray-600 hover:bg-sand-200 border border-sand-200'}`;
-                btn.innerText = `Day ${day.dayNum} - ${day.date}`;
-                btn.onclick = () => {
-                    currentDayId = day.id;
-                    renderTabs();
-                    renderDayContent();
-                };
+                btn.className = `px-5 py-2.5 rounded-full font-medium transition-all duration-200 text-sm md:text-base ${isActive ? 'bg-ocean-700 text-white shadow-md' : 'bg-white text-gray-600 hover:bg-sand-200 border border-sand-200'}`;
+                btn.innerText = `Day ${day.dayNum}`;
+                btn.onclick = () => { currentDayId = day.id; renderTabs(); renderDayContent(); };
                 container.appendChild(btn);
             });
 
-            // Budget & Spa Tab
             const budgetBtn = document.createElement('button');
-            const isBudgetActive = currentDayId === 'budget';
-            budgetBtn.className = `px-6 py-3 rounded-full font-medium transition-all duration-200 text-sm md:text-base ${isBudgetActive ? 'bg-orange-500 text-white shadow-md border border-orange-600' : 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200'}`;
-            budgetBtn.innerHTML = `💰 Budget & Spa Info`;
-            budgetBtn.onclick = () => {
-                currentDayId = 'budget';
-                renderTabs();
-                renderDayContent();
-            };
+            budgetBtn.className = `px-5 py-2.5 rounded-full font-medium transition-all duration-200 text-sm md:text-base ${currentDayId === 'budget' ? 'bg-ocean-700 text-white shadow-md border border-ocean-800' : 'bg-white text-gray-600 hover:bg-sand-200 border border-sand-200'}`;
+            budgetBtn.innerHTML = `💰 Budget`;
+            budgetBtn.onclick = () => { currentDayId = 'budget'; renderTabs(); renderDayContent(); };
             container.appendChild(budgetBtn);
+
+            const mapBtn = document.createElement('button');
+            mapBtn.className = `px-5 py-2.5 rounded-full font-medium transition-all duration-200 text-sm md:text-base ${currentDayId === 'map' ? 'bg-sunset-500 text-white shadow-md border border-sunset-600' : 'bg-orange-50 text-sunset-700 hover:bg-orange-100 border border-orange-200'}`;
+            mapBtn.innerHTML = `🗺️ Map & Dining`;
+            mapBtn.onclick = () => { currentDayId = 'map'; renderTabs(); renderDayContent(); };
+            container.appendChild(mapBtn);
         }
 
         function renderDayContent() {
             const itineraryContent = document.getElementById('itineraryContent');
             const budgetContent = document.getElementById('budgetContent');
+            const mapContent = document.getElementById('mapContent');
 
             if (currentDayId === 'budget') {
                 itineraryContent.classList.add('hidden');
                 budgetContent.classList.remove('hidden');
+                mapContent.classList.add('hidden');
+            } else if (currentDayId === 'map') {
+                itineraryContent.classList.add('hidden');
+                budgetContent.classList.add('hidden');
+                mapContent.classList.remove('hidden');
+                
+                // Initialize map if it doesn't exist
+                if (!mapInstance) {
+                    initMap();
+                } else {
+                    // Essential for Leaflet when unhiding containers
+                    setTimeout(() => {
+                        mapInstance.invalidateSize();
+                        updateMapForDay(currentMapDayFilter);
+                    }, 100);
+                }
             } else {
                 itineraryContent.classList.remove('hidden');
                 budgetContent.classList.add('hidden');
+                mapContent.classList.add('hidden');
 
                 const day = itineraryData.find(d => d.id === currentDayId);
-                
                 document.getElementById('displayDate').innerText = `🗓️ ${day.date} (Day ${day.dayNum})`;
                 document.getElementById('displayDressCode').innerHTML = `<strong>Attire:</strong> ${day.dressCode}`;
                 document.getElementById('displayTitle').innerText = day.title;
@@ -711,13 +531,10 @@
 
                 const tlContainer = document.getElementById('timelineContainer');
                 tlContainer.innerHTML = '';
-
                 day.timeline.forEach((event, index) => {
                     const row = document.createElement('div');
                     row.className = "relative flex flex-col md:flex-row md:justify-between items-start md:items-center group w-full";
-                    
                     const isEven = index % 2 === 0;
-
                     const timeBlock = `
                         <div class="md:w-5/12 ${isEven ? 'md:text-right md:pr-12' : 'md:text-left md:pl-12 order-last'} mb-4 md:mb-0 relative w-full pl-8 md:pl-0">
                             ${isEven ? '<div class="hidden md:block timeline-dot right-[-41px] left-auto"></div>' : ''}
@@ -728,31 +545,142 @@
                             <p class="text-gray-600 leading-relaxed">${event.desc}</p>
                         </div>
                     `;
-
                     let visualBlock = '<div class="md:w-5/12 hidden md:block"></div>';
                     if (event.photo) {
-                        visualBlock = `
-                            <div class="md:w-5/12 ${isEven ? 'md:pl-12' : 'md:pr-12'} w-full pl-8 md:pl-0">
-                                <div class="photo-frame ${event.photo.style}">
-                                    <div class="photo-inner ${event.photo.style.split(' ')[0]}">
-                                        ${event.photo.icon}
-                                    </div>
-                                    <p class="text-center font-serif text-sm mt-3 text-gray-800">${event.photo.caption}</p>
-                                </div>
-                            </div>
-                        `;
-                    } else if (window.innerWidth < 768) {
-                        visualBlock = '';
-                    }
+                        visualBlock = `<div class="md:w-5/12 ${isEven ? 'md:pl-12' : 'md:pr-12'} w-full pl-8 md:pl-0"><div class="photo-frame ${event.photo.style}"><div class="photo-inner ${event.photo.style.split(' ')[0]}">${event.photo.icon}</div><p class="text-center font-serif text-sm mt-3 text-gray-800">${event.photo.caption}</p></div></div>`;
+                    } else if (window.innerWidth < 768) { visualBlock = ''; }
 
-                    if (isEven) {
-                        row.innerHTML = timeBlock + `<div class="md:w-2/12 hidden md:flex justify-center"></div>` + visualBlock;
-                    } else {
-                        row.innerHTML = visualBlock + `<div class="md:w-2/12 hidden md:flex justify-center"></div>` + timeBlock;
-                    }
-
+                    if (isEven) row.innerHTML = timeBlock + `<div class="md:w-2/12 hidden md:flex justify-center"></div>` + visualBlock;
+                    else row.innerHTML = visualBlock + `<div class="md:w-2/12 hidden md:flex justify-center"></div>` + timeBlock;
                     tlContainer.appendChild(row);
                 });
+            }
+        }
+
+        // --- MAP & DINING LOGIC (New Filtering Architecture) ---
+
+        function initMap() {
+            setTimeout(() => {
+                mapInstance = L.map('varkalaMap', { scrollWheelZoom: false }).setView([8.7500, 76.7100], 12);
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap', maxZoom: 18
+                }).addTo(mapInstance);
+                
+                mapLayerGroup = L.layerGroup().addTo(mapInstance);
+                
+                // Render initial day
+                updateMapForDay(1);
+            }, 100);
+        }
+
+        function renderMapSidebarFilters() {
+            const selectorContainer = document.getElementById('mapDaySelector');
+            selectorContainer.innerHTML = '';
+            
+            mapData.forEach(day => {
+                const btn = document.createElement('button');
+                const isActive = day.day === currentMapDayFilter;
+                btn.className = `flex-1 py-3 text-sm font-bold border-r border-sand-200 whitespace-nowrap transition-colors ${isActive ? 'bg-white text-ocean-900 border-b-2 border-b-ocean-600' : 'text-gray-500 hover:bg-white hover:text-gray-800'}`;
+                btn.innerText = `Day ${day.day}`;
+                btn.onclick = () => updateMapForDay(day.day);
+                selectorContainer.appendChild(btn);
+            });
+        }
+
+        function updateMapForDay(dayNum) {
+            currentMapDayFilter = dayNum;
+            renderMapSidebarFilters(); // Update active tab styling
+            
+            const dayData = mapData.find(d => d.day === dayNum);
+            if(!dayData) return;
+
+            // Update Sidebar List
+            const listContainer = document.getElementById('mapListContainer');
+            listContainer.innerHTML = '';
+            
+            let listHTML = `<div class="mb-4 text-xs font-bold uppercase tracking-wider text-ocean-600">${dayData.date} Itinerary Locations</div>`;
+            
+            dayData.places.forEach(place => {
+                listHTML += `
+                    <div class="flex items-center gap-3 p-3 mb-2 bg-sand-50 rounded-lg hover:bg-ocean-50 cursor-pointer transition-colors border border-sand-100 group" onclick="focusMapLocation('${place.id}')">
+                        <div class="w-3 h-3 rounded-full bg-ocean-500 border border-ocean-700 flex-shrink-0 group-hover:scale-125 transition-transform"></div>
+                        <div>
+                            <div class="text-sm font-bold text-gray-800 leading-tight">${place.name}</div>
+                            <div class="text-xs text-gray-500">${place.desc}</div>
+                        </div>
+                    </div>`;
+            });
+
+            if(dayData.cafes.length > 0) {
+                listHTML += `<div class="mt-6 mb-4 text-xs font-bold uppercase tracking-wider text-sunset-600">Recommended Dining</div>`;
+                dayData.cafes.forEach(cafe => {
+                    listHTML += `
+                        <div class="flex items-start gap-3 p-3 mb-2 bg-white rounded-lg hover:bg-orange-50 cursor-pointer transition-colors border border-sand-200 group shadow-sm" onclick="focusMapLocation('${cafe.id}')">
+                            <div class="w-3 h-3 rounded-full bg-sunset-500 border border-sunset-700 flex-shrink-0 mt-1.5 group-hover:scale-125 transition-transform"></div>
+                            <div class="w-full">
+                                <div class="flex justify-between items-center w-full mb-1">
+                                    <div class="text-sm font-bold text-gray-800 leading-tight">${cafe.name}</div>
+                                    <span class="text-[10px] bg-orange-100 text-orange-800 px-1.5 py-0.5 rounded font-bold">⭐ ${cafe.rating}</span>
+                                </div>
+                                <span class="inline-block text-[10px] font-bold uppercase tracking-wider text-sunset-600 mb-1 border border-sunset-200 px-1 rounded">${cafe.tag}</span>
+                                <div class="text-xs text-gray-600">${cafe.desc}</div>
+                            </div>
+                        </div>`;
+                });
+            }
+            listContainer.innerHTML = listHTML;
+
+            // --- Update Map Markers ---
+            if(mapLayerGroup) {
+                mapLayerGroup.clearLayers();
+            }
+            mapMarkers = {};
+            const bounds = L.latLngBounds();
+
+            const visitIcon = L.divIcon({
+                className: 'bg-transparent border-0',
+                html: '<div class="w-5 h-5 bg-ocean-500 rounded-full border-2 border-white shadow-[0_2px_5px_rgba(0,0,0,0.5)]"></div>',
+                iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]
+            });
+
+            const cafeIcon = L.divIcon({
+                className: 'bg-transparent border-0',
+                html: '<div class="w-5 h-5 bg-sunset-500 rounded-full border-2 border-white shadow-[0_2px_5px_rgba(0,0,0,0.5)]"></div>',
+                iconSize: [20, 20], iconAnchor: [10, 10], popupAnchor: [0, -10]
+            });
+
+            dayData.places.forEach(place => {
+                const marker = L.marker(place.coords, { icon: visitIcon }).addTo(mapLayerGroup);
+                marker.bindPopup(`<div class="text-center"><h4 class="font-bold text-ocean-900 mb-1">${place.name}</h4><p class="text-xs text-gray-500">${place.desc}</p></div>`);
+                mapMarkers[place.id] = marker;
+                bounds.extend(place.coords);
+            });
+
+            dayData.cafes.forEach(cafe => {
+                const marker = L.marker(cafe.coords, { icon: cafeIcon }).addTo(mapLayerGroup);
+                marker.bindPopup(`<div class="text-center"><h4 class="font-bold text-sunset-700 mb-1">${cafe.name}</h4><span class="bg-orange-100 text-orange-800 text-[10px] px-1.5 py-0.5 rounded font-bold">⭐ ${cafe.rating}</span><p class="text-xs text-gray-500 mt-1">${cafe.desc}</p></div>`);
+                mapMarkers[cafe.id] = marker;
+                bounds.extend(cafe.coords);
+            });
+
+            // Auto-adjust map bounds to show exactly this day's points
+            if(mapInstance && bounds.isValid()) {
+                mapInstance.flyToBounds(bounds, {
+                    padding: [50, 50],
+                    maxZoom: 15,
+                    duration: 1.2
+                });
+            }
+        }
+
+        function focusMapLocation(id) {
+            if(mapMarkers[id] && mapInstance) {
+                const targetCoords = mapMarkers[id].getLatLng();
+                // Determine zoom: if it's a far inland location like Jatayu (p4_1), zoom out a bit more, else close in.
+                const zoomLvl = (id === 'p4_1' || id === 'p4_2') ? 13 : 17; 
+                
+                mapInstance.flyTo(targetCoords, zoomLvl, { duration: 1.5 });
+                setTimeout(() => { mapMarkers[id].openPopup(); }, 1500);
             }
         }
 
